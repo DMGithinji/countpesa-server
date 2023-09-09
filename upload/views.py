@@ -2,6 +2,7 @@ from django.shortcuts import render, redirect
 from .forms import UploadFileForm
 from .models import UploadedFile
 import pdfplumber
+import fitz  # PyMuPDF
 from io import BytesIO
 import logging
 
@@ -12,22 +13,26 @@ def upload_file(request):
     if request.method == 'POST':
         form = UploadFileForm(request.POST, request.FILES)
         if form.is_valid():
-            pdf_file = request.FILES['file']
-            logger.info("Received a new file upload request.")
+            pdf_file = form.cleaned_data['pdf_file'].read()
+            password = form.cleaned_data['password']
 
-            if not pdf_file.name.endswith('.pdf'):
-                logger.warning("Invalid file type attempted to upload.")
-                return render(request, 'upload.html', {'form': form, 'error': 'Invalid file type'})
+            logger.info(f"Received a new file upload request. Password {password}")
 
-            pdf_bytes = BytesIO(pdf_file.read())
-            content = ''
+            try:
+                pdf_reader = fitz.open("pdf", pdf_file)
+                pdf_reader.authenticate(password)
+            except Exception as e:
+                logger.error(f"Could not open or decrypt the PDF: {e}")
+                return render(request, 'upload.html', {'form': form, 'error': 'Could not open or decrypt PDF'})
 
-            with pdfplumber.open(pdf_bytes) as pdf:
-                for page in pdf.pages:
-                    content += page.extract_text()
-                    print(content)
+            # Reading PDF content with pdfplumber
+            text_content = ''
+            for page_number in range(len(pdf_reader)):
+                page = pdf_reader[page_number]
+                text_content += page.get_text("text")
 
-            UploadedFile.objects.create(content=content)
+            print(text_content)
+            UploadedFile.objects.create(content=text_content)
             logger.info("Successfully processed the PDF and saved the content.")
             return redirect('success')
         else:
