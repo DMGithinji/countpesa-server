@@ -1,10 +1,11 @@
+import logging
+import json
+from pprint import pprint
 from django.shortcuts import render, redirect
+import fitz  # PyMuPDF
 from .forms import UploadFileForm
 from .models import UploadedFile
-# import pdfplumber
-import fitz  # PyMuPDF
-# from io import BytesIO
-import logging
+from .statement_parser.parser import parse_statement_text
 
 # Initialize logger
 logger = logging.getLogger(__name__)
@@ -36,9 +37,13 @@ def upload_file(request):
                 page = pdf_reader[page_number]
                 text_content += page.get_text("text")
 
-            print(text_content)
-            UploadedFile.objects.create(content=text_content)
-            logger.info("Successfully processed the PDF and saved the content.")
+            statement_list = text_content.split("\n")
+            parsed_statement = parse_statement_text(statement_list)
+            pprint(parsed_statement)
+
+            json_string = json.dumps(parsed_statement)
+            upload = UploadedFile.objects.create(content=json_string)
+
             return redirect('success')
         else:
             logger.warning("Form is not valid.")
