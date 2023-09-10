@@ -1,9 +1,9 @@
 from django.shortcuts import render, redirect
 from .forms import UploadFileForm
 from .models import UploadedFile
-import pdfplumber
+# import pdfplumber
 import fitz  # PyMuPDF
-from io import BytesIO
+# from io import BytesIO
 import logging
 
 # Initialize logger
@@ -16,11 +16,16 @@ def upload_file(request):
             pdf_file = form.cleaned_data['pdf_file'].read()
             password = form.cleaned_data['password']
 
-            logger.info(f"Received a new file upload request. Password {password}")
+            print(f"Received a new file upload request. Password {password}")
 
             try:
-                pdf_reader = fitz.open("pdf", pdf_file)
+                pdf_reader = fitz.open(stream=pdf_file, filetype='pdf')
                 pdf_reader.authenticate(password)
+
+                if pdf_reader.is_encrypted:
+                    logger.error(f'Cannot decrypt file with password {password}')
+                    return render(request, 'upload.html', {'form': form, 'error': 'Could not open or decrypt PDF'})
+                print(f'Authenticated!')
             except Exception as e:
                 logger.error(f"Could not open or decrypt the PDF: {e}")
                 return render(request, 'upload.html', {'form': form, 'error': 'Could not open or decrypt PDF'})
