@@ -1,5 +1,39 @@
 import re
+import os
+import tempfile
+import fitz  # PyMuPDF
 from .utils import is_date_string, convert_to_number, convert_to_datetime
+
+def get_pdf_text(uploaded_file, password):
+
+  # Create a temporary file to save the uploaded PDF
+  with tempfile.NamedTemporaryFile(delete=False) as temp_pdf:
+      for chunk in uploaded_file.chunks():
+          temp_pdf.write(chunk)
+
+  # Open the temporary file to read its bytes
+  with open(temp_pdf.name, 'rb') as f:
+      pdf_bytes = f.read()
+
+  try:
+    pdf_reader = fitz.open(stream=pdf_bytes, filetype="pdf")
+    pdf_reader.authenticate(password)
+
+    if pdf_reader.is_encrypted:
+        return {'error': 'Could not decrypt PDF'}
+  except Exception as e:
+      return {'error': f'Error while open PDF: {str(e)}'}
+
+  # Reading PDF content with pdfplumber
+  text_content = ''
+  for page_number in range(len(pdf_reader)):
+      page = pdf_reader[page_number]
+      text_content += page.get_text("text")
+
+  # Delete the temporary PDF file
+  os.unlink(temp_pdf.name)
+  return { 'text': text_content }
+
 
 def parse_statement_text(STATEMENT_LIST):
   # STATEMENT_LIST = text_content.split("\n")

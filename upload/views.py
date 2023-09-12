@@ -1,58 +1,46 @@
 import logging
 import json
 from pprint import pprint
-from django.shortcuts import render, redirect
-import fitz  # PyMuPDF
-from .forms import UploadFileForm
-from .models import UploadedFile
-from .statement_parser.parser import parse_statement_text
+
+from django.http import JsonResponse
+from django.views import View
+from django.utils.decorators import method_decorator
+from django.views.decorators.csrf import csrf_exempt
+from .statement_parser.parser import get_pdf_text, parse_statement_text
 
 # Initialize logger
 logger = logging.getLogger(__name__)
 
-def upload_file(request):
-    if request.method == 'POST':
-        form = UploadFileForm(request.POST, request.FILES)
-        if form.is_valid():
-            pdf_file = form.cleaned_data['pdf_file'].read()
-            password = form.cleaned_data['password']
+@method_decorator(csrf_exempt, name='dispatch')
+class ProcessPdfView(View):
 
-            print(f"Received a new file upload request. Password {password}")
+    def post(self, request, *args, **kwargs):
+        try:
+            uploaded_file = request.FILES.get('statement', None)
+            password = request.POST.get('password', None)
 
-            try:
-                pdf_reader = fitz.open(stream=pdf_file, filetype='pdf')
-                pdf_reader.authenticate(password)
+            if not password and upload_file:
+                response = {'status': 'error', 'message': 'Payload is not valid'}
+                return JsonResponse(response)
 
-                if pdf_reader.is_encrypted:
-                    logger.error(f'Cannot decrypt file with password {password}')
-                    return render(request, 'upload.html', {'form': form, 'error': 'Could not open or decrypt PDF'})
-                print(f'Authenticated!')
-            except Exception as e:
-                logger.error(f"Could not open or decrypt the PDF: {e}")
-                return render(request, 'upload.html', {'form': form, 'error': 'Could not open or decrypt PDF'})
+            pdf_data = get_pdf_text(uploaded_file, password)
 
-            # Reading PDF content with pdfplumber
-            text_content = ''
-            for page_number in range(len(pdf_reader)):
-                page = pdf_reader[page_number]
-                text_content += page.get_text("text")
+            if (pdf_data.get('error', None)):
+                response = {'status': 'error', 'message': pdf_data['error']}
+                return JsonResponse(response)
 
+            text_content = pdf_data.get('text', None)
+            print(f"Text is {len(text_content)} words long")
             statement_list = text_content.split("\n")
             parsed_statement = parse_statement_text(statement_list)
-            pprint(parsed_statement)
 
-            json_string = json.dumps(parsed_statement)
-            upload = UploadedFile.objects.create(content=json_string)
+            response = {
+                'status': 'success',
+                'message': 'PDF processed successfully',
+                'results': parsed_statement
+            }
 
-            return redirect('success')
-        else:
-            logger.warning("Form is not valid.")
-    else:
-        form = UploadFileForm()
-        logger.info("New file upload form served.")
+            return JsonResponse(response)
 
-    return render(request, 'upload.html', {'form': form})
-
-
-def success(request):
-    return render(request, 'success.html')
+        except Exception as e:
+            return JsonResponse({'status': 'error', 'message': f'An error occurred: {str(e)}'})
