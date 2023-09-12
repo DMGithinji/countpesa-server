@@ -30,7 +30,6 @@ class ProcessPdfView(View):
                 return JsonResponse(response)
 
             text_content = pdf_data.get('text', None)
-            print(f"Text is {len(text_content)} words long")
             statement_list = text_content.split("\n")
             parsed_statement = parse_statement_text(statement_list)
 

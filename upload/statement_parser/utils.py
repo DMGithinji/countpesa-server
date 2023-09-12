@@ -15,4 +15,5 @@ def convert_to_number(number_str):
 
 def convert_to_datetime(date_string):
     date_format = '%Y-%m-%d %H:%M:%S'
-    return datetime.strptime(date_string, date_format)
+    timestamp = datetime.strptime(date_string, date_format).timestamp()
+    return int(timestamp)

@@ -24,7 +24,7 @@ def get_pdf_text(uploaded_file, password):
   except Exception as e:
       return {'error': f'Error while open PDF: {str(e)}'}
 
-  # Reading PDF content with pdfplumber
+  # Reading PDF content
   text_content = ''
   for page_number in range(len(pdf_reader)):
       page = pdf_reader[page_number]
@@ -56,7 +56,7 @@ def parse_statement_text(STATEMENT_LIST):
       pointer += 1
     return {
       'mpesa_code': STATEMENT_DICT[transaction_date_index - 1],
-      'trasaction_date': STATEMENT_DICT[transaction_date_index],
+      'trasaction_date': convert_to_datetime(STATEMENT_DICT[transaction_date_index]),
       'transaction_description': transaction_description.strip(),
       'status': STATEMENT_DICT[pointer],
       'amount': convert_to_number(STATEMENT_DICT[pointer + 1]),
@@ -89,9 +89,9 @@ def parse_statement_text(STATEMENT_LIST):
   for index, text in enumerate(STATEMENT_LIST):
     if (actions.get(text)):
       key = text[:-1]
-      if (actions[text] is get_next):
-        parsed_statement['metadata'][key] = actions[text](index)
-      elif (actions[text] is get_paid_in_and_out):
+      # if (actions[text] is get_next):
+      #   parsed_statement['metadata'][key] = actions[text](index)
+      if (actions[text] is get_paid_in_and_out):
         parsed_statement['summary'][key] = actions[text](index)
     elif is_date_string(text):
       transaction = retrieve_transaction_details(index)
