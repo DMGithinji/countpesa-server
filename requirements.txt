@@ -1,7 +1,9 @@
 asgiref~=3.7
 backports.zoneinfo~=0.2
 Django~=3.2
-gunicorn==20.1.0
+django-cors-headers~=4.1
+gunicorn~=20.1
 PyMuPDF~=1.22
+pytz~=2023.3
 sqlparse~=0.4
 typing-extensions~=4.7
