@@ -27,6 +27,7 @@ DEBUG = True
 
 CORS_ALLOW_ALL_ORIGINS = True
 
+ALLOWED_HOSTS = ['countpesa.onrender.com', 'localhost:3003', 'countpesa.web.app']
 
 # Application definition
 
