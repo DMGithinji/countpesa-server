@@ -43,3 +43,6 @@ class ProcessPdfView(View):
 
         except Exception as e:
             return JsonResponse({'status': 'error', 'message': f'An error occurred: {str(e)}'})
+
+def health_check(request):
+    return JsonResponse({'status': 'OK'}, status=200)
