@@ -11,6 +11,9 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 
 from pathlib import Path
+from dotenv import load_dotenv
+
+load_dotenv()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -27,7 +30,15 @@ DEBUG = True
 
 CORS_ALLOW_ALL_ORIGINS = True
 
-ALLOWED_HOSTS = ['countpesa.onrender.com', 'localhost:3003', 'countpesa.web.app']
+ALLOWED_HOSTS = ['countpesa.onrender.com', 'localhost:3000', 'countpesa.web.app', '127.0.0.1']
+
+CORS_ALLOWED_ORIGINS = [
+    "https://countpesa.web.app",
+    "https://countpesa.com",
+    "http://localhost:3000",  # If you're testing with a local frontend server
+]
+
+
 
 # Application definition
 
@@ -40,6 +51,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'corsheaders',
     'upload',
+    'feedback'
 ]
 
 MIDDLEWARE = [
