@@ -50,6 +50,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'corsheaders',
+    'django_q',
     'upload',
     'feedback'
 ]
@@ -127,6 +128,15 @@ USE_I18N = True
 
 USE_TZ = True
 
+Q_CLUSTER = {
+    "name": "api-v2",
+    "orm": "default",  # Use Django's ORM + database for broker
+    "ack_failures": True,
+    'timeout': 500,
+    'retry': 600,
+    'max_attempts': 1,
+    'attempt_count': 1
+}
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
