@@ -1,5 +1,7 @@
 asgiref~=3.7
 backports.zoneinfo~=0.2
+cffi~=1.12
+cryptography~=42.0
 Django~=3.2
 django-cors-headers~=4.1
 django-q~=1.3
