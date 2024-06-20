@@ -25,8 +25,7 @@ def post_failed_prompt(request):
         data = json.loads(request.body)
         prompt = data.get('prompt', None)
         response = data.get('response', None)
-        # async_task(post_failed_chatpesa_questions, prompt)
-        post_failed_chatpesa_questions(prompt, response)
+        async_task(post_failed_chatpesa_questions, prompt, response)
         return JsonResponse({"status": "success", "message": "Submitted successfully"}, status=200)
 
     except Exception as e:

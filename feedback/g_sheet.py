@@ -7,11 +7,14 @@ def get_credentials() -> dict:
   """
   Return gspread credentials.
   """
+  private_key = os.environ.get('PRIVATE_KEY', '')
+  private_key = private_key.replace('\\n', '\n')
+  private_key = private_key.replace('"', '')
   return {
     "type": os.environ.get('TYPE', ''),
     "project_id": os.environ.get('PROJECT_ID', ''),
     "private_key_id": os.environ.get('PRIVATE_KEY_ID', ''),
-    "private_key": os.environ.get('PRIVATE_KEY', ''),
+    "private_key": private_key,
     "client_email": os.environ.get('CLIENT_EMAIL', ''),
     "client_id": os.environ.get('CLIENT_ID', ''),
     "auth_uri": os.environ.get('AUTH_URI', ''),
@@ -29,6 +32,7 @@ def get_worksheet(workSheetType):
     "feedback": "CountpesaFeedback",
     "chatpesa": "ChatPesa: Failed Prompts"
   }
+  # Initialize a gspread client with the given credentials.
   gc = gspread.service_account_from_dict(get_credentials())
   spreadsheet = gc.open(worksheet[workSheetType])
   worksheet = spreadsheet.sheet1
