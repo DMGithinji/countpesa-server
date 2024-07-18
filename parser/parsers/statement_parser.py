@@ -1,6 +1,9 @@
 import os
 import tempfile
 import fitz  # PyMuPDF
+from django.core.files.uploadedfile import UploadedFile
+from django.core.exceptions import ValidationError, PermissionDenied
+
 from .safaricom_app import safaricom_app_parser
 # from .mpesa_app_parser import mpesa_app_parser
 
@@ -15,8 +18,8 @@ parsers = [
   # }
 ]
 
-def get_parsed_statement(parsered_file, password):
-  pdf_data = get_pdf_text(parsered_file, password)
+def get_parsed_statement(statement: UploadedFile, password: str) -> dict:
+  pdf_data = get_pdf_text(statement, password)
   text_content = pdf_data.get('text', None)
 
   parser = None
@@ -25,31 +28,28 @@ def get_parsed_statement(parsered_file, password):
         parser = p['parser']
         break
   if not parser:
-    raise ValueError('The statement parsered is not handled yet. Please report this in the feedback section.')
+    raise ValidationError('The statement type uploaded is not handled yet. Please report this in the feedback section.')
 
   statement_list = text_content.split("\n")
   parsed_statement = parser(statement_list)
   return parsed_statement
 
-def get_pdf_text(parsered_file, password):
+def get_pdf_text(statement: UploadedFile, password: str) -> dict:
 
   # Create a temporary file to save the parsered PDF
   with tempfile.NamedTemporaryFile(delete=False) as temp_pdf:
-      for chunk in parsered_file.chunks():
+      for chunk in statement.chunks():
           temp_pdf.write(chunk)
 
   # Open the temporary file to read its bytes
   with open(temp_pdf.name, 'rb') as f:
       pdf_bytes = f.read()
 
-  try:
-    pdf_reader = fitz.open(stream=pdf_bytes, filetype="pdf")
-    pdf_reader.authenticate(password)
+  pdf_reader = fitz.open(stream=pdf_bytes, filetype="pdf")
+  pdf_reader.authenticate(password)
 
-    if pdf_reader.is_encrypted:
-      raise ValueError("Could not decrypt PDF.")
-  except Exception as e:
-    raise ValueError(f'{str(e)}')
+  if pdf_reader.is_encrypted:
+    raise PermissionDenied("Could not decrypt PDF.")
 
   # Reading PDF content
   text_content = ''
