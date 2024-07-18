@@ -2,8 +2,8 @@ import re
 from datetime import datetime
 
 def is_date_string(text):
-  pattern = r'\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}'
-  return re.search(pattern, text)
+    pattern = r'\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}'
+    return re.search(pattern, text)
 
 def convert_to_number(number_str):
     number_str = number_str.replace(',', '')
