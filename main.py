@@ -4,6 +4,7 @@ from fastapi import FastAPI, HTTPException, BackgroundTasks
 from pydantic import BaseModel
 from g_sheets import post_feedback_data
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 
 app = FastAPI()
 logger = logging.getLogger(__name__)
@@ -38,4 +39,8 @@ async def submit_feedback(feedback: FeedbackRequest, background_tasks: Backgroun
 
 @app.get("/health")
 async def health_check():
-    return {"status": "healthy"}
+    response = JSONResponse(content={"status": "healthy"})
+    response.headers["Access-Control-Allow-Origin"] = "*"
+    response.headers["Access-Control-Allow-Methods"] = "*"
+    response.headers["Access-Control-Allow-Headers"] = "*"
+    return response
