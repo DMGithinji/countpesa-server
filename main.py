@@ -1,7 +1,6 @@
-import asyncio
 from typing import Optional
 import logging
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, BackgroundTasks
 from pydantic import BaseModel
 from g_sheets import post_feedback_data
 from fastapi.middleware.cors import CORSMiddleware
@@ -29,9 +28,9 @@ class FeedbackRequest(BaseModel):
     email: Optional[str] = None
 
 @app.post("/feedback/")
-async def submit_feedback(feedback: FeedbackRequest):
+async def submit_feedback(feedback: FeedbackRequest, background_tasks: BackgroundTasks):
     try:
-        asyncio.create_task(post_feedback_data(feedback.dict()))
+        background_tasks.add_task(post_feedback_data, feedback.dict())
         return {"status": "success", "message": "Feedback submitted successfully"}
     except Exception as e:
         logger.error(f"Unexpected error in feedback submission: {str(e)}")
