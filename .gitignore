@@ -1,0 +1,30 @@
+
+---
+
+### `.gitignore`
+
+```gitignore
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+
+# Environment variables
+.env
+
+# Logs
+*.log
+
+# IDEs
+.idea/
+.vscode/
+*.sublime-workspace
+
+# Misc
+.DS_Store
+*.swp
