@@ -4,10 +4,23 @@ import logging
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from g_sheets import post_feedback_data
+from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+      "https://justtldr.com",
+      "chrome-extension://cmnjpgpkkdmkkmpliipnmhbelgbiefpa",
+      "http://localhost:3000",
+      ],
+    allow_credentials=True,
+    allow_methods=["*"],  # Allow all methods (GET, POST, etc.)
+    allow_headers=["*"],  # Allow all headers
+)
 
 class FeedbackRequest(BaseModel):
     google_sheet: str
