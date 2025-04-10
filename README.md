@@ -1,173 +1,91 @@
-# Feedback Forwarder API
+# CountPesa Server - M-PESA Statement Parser & Feedback API
 
-A simple FastAPI server that forwards feedback data to a specified Google Sheet. This project is designed to be reusable across multiple projects, each with its own feedback Google Sheet.
+A very simple FastAPI service that provides two main functionalities:
 
-## Features
+1. **Statement Parsing**:
+Parses M-PESA, and bank statements from PDF files and extracts transaction details. The application does not store the transaction data or the original statement PDFs.
+This api is used by the [frontend application](https://app.countpesa.com) which visualizes the transaction data. This is the web version of the [CountPesa mobile app](https://play.google.com/store/apps/details?id=com.countpesa&utm_source=website&utm_medium=hero&utm_campaign=github_promo).
 
-- Accepts feedback via a POST request to `/feedback/` with a JSON payload
-- Forwards feedback data (type, message, email, and timestamp) to a Google Sheet specified in the request
-- Includes a health check endpoint at `/health`
-
-## Project Structure
-
-```
-feedback-forwarder/
-├── .env                # Environment variables for Google Sheets credentials
-├── .gitignore          # Git ignore file
-├── main.py             # FastAPI application
-├── g_sheet.py          # Google Sheets integration logic
-├── README.md           # Project documentation
-└── requirements.txt    # Project dependencies
-```
-
-## Prerequisites
-
-- Python 3.8+
-- A Google Cloud project with the Google Sheets API enabled
-- A Google Service Account with credentials
-- Google Sheets created for feedback storage
+1. **Feedback Forwarding**: Forwards user feedback to a Google Sheets, facilitating easy aggregation and analysis of user responses and critical errors in the frontend application.
 
 ## Setup Instructions
+
+### Prerequisites
+
+- Docker and Docker Compose (recommended)
+- Python 3.8 or higher (for local development)
+- Access to a Google Sheets API service account (optional if feedback needed)
 
 ### 1. Clone the Repository
 
 ```bash
-git clone <repository-url>
-cd feedback-forwarder
+git clone https://github.com/DMGithinji/countpesa-server.git
+cd countpesa-server
 ```
 
-### 2. Set Up a Virtual Environment
+### 2. Configure Environment Variables
+
+Create a `.env` file in the root directory based on the provided `.env.sample`. Only necessary if you want to link to Google Sheets for feedback forwarding.
+
+### 3. Build and Run with Docker
+
+To build and run the application using Docker:
+
+```
+docker build -t app .
+docker run -p 8000:8000 --env-file .env app
+```
+
+Alternatively, if you are using Docker Compose:
+
+```
+docker-compose up --build
+```
+
+### 4. Local Development Setup (Alternative)
 
 ```bash
+# Create and activate virtual environment
 python -m venv venv
 source venv/bin/activate  # On Windows: venv\Scripts\activate
-```
 
-### 3. Install Dependencies
-
-```bash
+# Install dependencies
 pip install -r requirements.txt
+
+# Run the application
+uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 ```
 
-### 4. Configure Environment Variables
+- The API will be available at <http://localhost:8000>
+- Access `/docs` for the interactive Swagger UI documentation
 
-Create a `.env` file in the root directory and add your Google Service Account credentials:
+## Frontend Integration
 
-```
-TYPE=service_account
-PROJECT_ID=your-project-id
-PRIVATE_KEY_ID=your-private-key-id
-PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----\n"
-CLIENT_EMAIL=your-service-account-email
-CLIENT_ID=your-client-id
-AUTH_URI=https://accounts.google.com/o/oauth2/auth
-TOKEN_URI=https://oauth2.googleapis.com/token
-AUTH_PROVIDER_X509_CERT_URL=https://www.googleapis.com/oauth2/v1/certs
-CLIENT_X509_CERT_URL=https://www.googleapis.com/robot/v1/metadata/x509/your-service-account-email
-UNIVERSE_DOMAIN=googleapis.com
-```
+You can test this server with the frontend application:
 
-* Replace the placeholders with values from your Google Service Account key file (JSON format).
+- Live web app: [app.countpesa.com](https://app.countpesa.com)
+- Source code: [GitHub Repository](https://github.com/DMGithinji/countpesa-web-app)
 
-### 5. Set Up Google Sheets
+## Contributing
 
-* Create a Google Sheet named `justTLDR_Feedback` (or any name, but it must match the workSheetType mapping in g_sheet.py).
-* Share the sheet with your service account email (e.g., your-service-account-email@your-project-id.iam.gserviceaccount.com) with **Editor** permissions.
-* See the "Google Sheets Setup Process" section below for detailed steps.
+Contributions to the project are welcome! Here are some ways you can contribute:
 
-### 6. Run the Server
+### Bank Statement Support
 
-```bash
-uvicorn main:app --reload
-```
+We're looking to expand the service to handle bank statements with the same transaction interface.
 
-* The API will be available at http://127.0.0.1:8000
-* Use `/docs` for the interactive Swagger UI
+### How to Contribute
 
-## API Endpoints
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add some amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
 
-### POST `/feedback/`
+### Other Improvement Ideas
 
-Submit feedback to a specified Google Sheet.
-
-* **Request Body**:
-  ```json
-  {
-    "google_sheet": "justTLDR_Feedback",
-    "message": "Great app!",
-    "type": "normal",
-    "email": "user@example.com"
-  }
-  ```
-  * `google_sheet`: Required. The name of the Google Sheet (must match a key in g_sheet.py).
-  * `message`: Required. The feedback message.
-  * `type`: Optional. The type of feedback (e.g., positive, negative).
-  * `email`: Optional. The user's email.
-
-* **Response**:
-  ```json
-  {
-    "status": "success",
-    "message": "Feedback submitted successfully"
-  }
-  ```
-
-### GET `/health`
-
-Check if the server is running.
-
-* **Response**:
-  ```json
-  {
-    "status": "healthy"
-  }
-  ```
-
-## Google Sheets Setup Process
-
-### 1. Create the Google Sheet
-
-* Go to Google Sheets.
-* Create a new spreadsheet.
-* Name it eg `justTLDR_Feedback` (Take note of that name, it'll be used in your requests).
-
-### 2. Enable Google Sheets API
-
-* Go to the Google Cloud Console.
-* Create a new project (or select an existing one).
-* Navigate to **"APIs & Services" > "Library"**.
-* Search for "Google Sheets API" and click "Enable".
-
-### 3. Create a Service Account
-
-* In the Google Cloud Console, go to **"IAM & Admin" > "Service Accounts"**.
-* Click **"Create Service Account"**.
-   * Enter a name (e.g., feedback-forwarder).
-   * Skip the "Grant this service account access" step (not needed for Sheets).
-   * Skip the "Grant users access" step.
-* After creation, click on the service account, go to the **"Keys"** tab, and click **"Add Key" > "Create new key"**.
-   * Select **JSON** and download the key file.
-* Open the JSON file and copy the values into your .env file.
-
-### 4. Share the Google Sheet with the Service Account
-
-* Open your Google Sheet.
-* Click the **"Share"** button in the top-right corner.
-* In the "Share with people and groups" field, paste the client_email from your .env file (e.g., your-service-account-email@your-project-id.iam.gserviceaccount.com).
-* Set the permission to **"Editor"** (this allows the service account to append rows).
-* Click **"Send"** or **"Done"**.
-
-### 5. Verify the Setup
-
-* Run the server and send a test request:
-  ```bash
-  curl -X POST "http://127.0.0.1:8000/feedback/" \
-  -H "Content-Type: application/json" \
-  -d '{"google_sheet": "justtldr_feedback", "message": "Test feedback"}'
-  ```
-* Check your Google Sheet for a new row with the feedback data.
-
-## Notes
-
-* The Google Sheet must exist and be shared with the service account before the API can write to it.
-* The sheet's first tab (sheet1) is used by default. If you need to use a different tab, modify the get_worksheet function in g_sheet.py to select the desired tab (e.g., spreadsheet.worksheet("Sheet2")).
+- Enhanced transaction categorization
+- Support for additional financial institutions
+- Improved error handling
+- Performance optimizations
+- Test coverage

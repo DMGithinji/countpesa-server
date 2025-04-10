@@ -5,7 +5,6 @@ __pycache__
 .Python
 env/
 venv/
-.env
 .venv
 .git
 .gitignore

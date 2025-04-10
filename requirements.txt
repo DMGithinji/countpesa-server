@@ -1,4 +1,11 @@
+black==24.3.0
 fastapi
+flake8==7.0.0
 uvicorn
 gspread
+pre-commit
+pydantic==2.4.2
+pydantic-settings==2.0.3
+PyMuPDF==1.22.5
 python-dotenv
+python-multipart==0.0.6

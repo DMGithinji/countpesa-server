@@ -1,0 +1,9 @@
+[flake8]
+max-line-length = 100
+exclude = .git,__pycache__,venv,env,build,dist
+ignore = E203, W503, D100, D101, D102, D103, D104, D105, D106, D107, D200, D201, D202, D203, D204, D205, D206, D207, D208, D209, D210, D211, D212, D213, D214, D215, D300, D301, D302, D400, D401, D402, D403, D404, D405, D406, D407, D408, D409, D410, D411, D412, D413, D414, D415, D416, D417
+per-file-ignores =
+    # Allow __init__.py files to be empty
+    __init__.py:F401,D104
+    # Tests can have longer lines
+    tests/*:E501
