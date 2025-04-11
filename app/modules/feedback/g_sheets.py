@@ -2,7 +2,7 @@ from datetime import datetime
 
 import gspread
 
-from app.config import google_credentials
+from app.config import google_credentials, settings
 
 
 def get_worksheet(google_sheet):
@@ -12,7 +12,7 @@ def get_worksheet(google_sheet):
 
 
 def post_feedback_data(data):
-    current_datetime = datetime.now()
+    current_datetime = datetime.now(settings.TIMEZONE)
     formatted_datetime = current_datetime.strftime("%d %b %Y, %I:%M %p")
     post_content = {
         "date": formatted_datetime,

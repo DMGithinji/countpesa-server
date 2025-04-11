@@ -1,11 +1,13 @@
 import os
+from typing import ClassVar
 
+import pytz
 from dotenv import load_dotenv
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 load_dotenv()
 
-# Handle CORS settings completely outside of pydantic
+EAT_TIMEZONE = pytz.timezone("Africa/Nairobi")
 
 
 def get_cors_origins():
@@ -31,6 +33,7 @@ GOOGLE_CREDENTIALS = {
 class Settings(BaseSettings):
     APP_NAME: str = "Feedback Forwarder API"
     DEBUG: bool = False
+    TIMEZONE: ClassVar[pytz.tzinfo.BaseTzInfo] = EAT_TIMEZONE
 
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 

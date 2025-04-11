@@ -9,3 +9,4 @@ pydantic-settings==2.0.3
 PyMuPDF==1.22.5
 python-dotenv
 python-multipart==0.0.6
+pytz==2023.3
