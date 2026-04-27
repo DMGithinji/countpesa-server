@@ -24,7 +24,7 @@ class FeedbackRequest(BaseModel):
     )
 
     class Config:
-        schema_extra = {
+        json_schema_extra = {
             "example": {
                 "google_sheet_name": "Countpesa Web App Feedback",
                 "message": "Would love to see support for Equity Bank!",
@@ -41,6 +41,6 @@ class FeedbackResponse(BaseModel):
     )
 
     class Config:
-        schema_extra = {
+        json_schema_extra = {
             "example": {"status": "success", "message": "Feedback submitted successfully"}
         }

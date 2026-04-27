@@ -1,8 +1,11 @@
 from datetime import datetime
+import logging
 
 import gspread
 
 from app.config import google_credentials, settings
+
+logger = logging.getLogger(__name__)
 
 
 def get_worksheet(google_sheet):
@@ -21,5 +24,15 @@ def post_feedback_data(data):
         "email": data.get("email", None),
     }
     values = [post_content[key] for key in post_content]
+    # Keep empty fields blank in Sheets instead of literal "None".
+    values = ["" if value is None else value for value in values]
     worksheet = get_worksheet(data.get("google_sheet_name"))
-    worksheet.append_row(values)
+    # Avoid Google Sheets "table detection" surprises by writing to the actual last row.
+    next_row = len(worksheet.get_all_values()) + 1
+    end_column = chr(ord("A") + len(values) - 1)
+    worksheet.update(f"A{next_row}:{end_column}{next_row}", [values])
+    logger.info(
+        "Feedback appended to sheet '%s' at row %s",
+        data.get("google_sheet_name"),
+        next_row,
+    )

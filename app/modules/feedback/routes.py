@@ -1,6 +1,6 @@
 import logging
 
-from fastapi import APIRouter, BackgroundTasks, HTTPException
+from fastapi import APIRouter, HTTPException
 
 from .g_sheets import post_feedback_data
 from .models import FeedbackRequest, FeedbackResponse
@@ -16,10 +16,10 @@ logger = logging.getLogger(__name__)
     summary="Submit User Feedback",
     description="Submit user feedback to be stored in a specified Google Sheet.",
 )
-async def submit_feedback_handler(feedback: FeedbackRequest, background_tasks: BackgroundTasks):
+async def submit_feedback_handler(feedback: FeedbackRequest):
     try:
-        background_tasks.add_task(post_feedback_data, feedback.dict())
+        post_feedback_data(feedback.model_dump())
         return FeedbackResponse(status="success", message="Feedback submitted successfully")
-    except Exception as e:
-        logger.error(f"Unexpected error in feedback submission: {str(e)}")
+    except Exception:
+        logger.exception("Failed to submit feedback to Google Sheets")
         raise HTTPException(status_code=500, detail="Unexpected error occurred")
